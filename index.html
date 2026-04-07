@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentOS Prompt Builder</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=Bebas+Neue&family=IBM+Plex+Sans+KR:wght@300;400;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #00ff9d;
+    --accent2: #ff6b35;
+    --accent3: #7c6fff;
+    --text: #e0e0f0;
+    --muted: #666680;
+    --grid: rgba(0,255,157,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans KR', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 48px;
+  }
+  .header-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 3px 10px;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    animation: pulse-border 2s ease-in-out infinite;
+  }
+  @keyframes pulse-border {
+    0%,100% { box-shadow: 0 0 0 0 rgba(0,255,157,0); }
+    50% { box-shadow: 0 0 12px 0 rgba(0,255,157,0.3); }
+  }
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 7vw, 72px);
+    letter-spacing: 4px;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 60%, var(--accent3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1.6;
+  }
+
+  /* Step sections */
+  .step-grid {
+    display: grid;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .step-card:hover { border-color: rgba(0,255,157,0.3); }
+  .step-card::before {
+    content: attr(data-step);
+    position: absolute;
+    top: -1px;
+    left: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    background: var(--bg);
+    padding: 0 6px;
+    transform: translateY(-50%);
+  }
+
+  .step-card h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 6px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+    letter-spacing: 1px;
+  }
+  .tab.active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .tab:hover:not(.active) { color: var(--text); border-color: var(--muted); }
+
+  /* Form fields */
+  label {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    margin-top: 16px;
+  }
+  label:first-child { margin-top: 0; }
+
+  input[type="text"], select, textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    resize: vertical;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+  }
+  select option { background: var(--surface); }
+
+  /* Agent chips */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+  }
+  .agent-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .agent-chip:hover { border-color: var(--muted); }
+  .agent-chip.selected { border-color: var(--accent); background: rgba(0,255,157,0.06); }
+  .agent-chip .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    border: 1px solid var(--muted);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .agent-chip.selected .dot {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 6px rgba(0,255,157,0.6);
+  }
+  .agent-chip span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .agent-chip.selected span { color: var(--text); }
+
+  /* Mode select */
+  .mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .mode-card {
+    padding: 16px 12px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .mode-card:hover { border-color: var(--muted); }
+  .mode-card.selected { border-color: var(--accent3); background: rgba(124,111,255,0.08); }
+  .mode-card .icon { font-size: 22px; margin-bottom: 6px; }
+  .mode-card .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: block;
+  }
+  .mode-card.selected .label { color: var(--accent3); }
+  .mode-card .desc {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+
+  /* Generate button */
+  .generate-btn {
+    width: 100%;
+    padding: 18px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .generate-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: translateX(-100%);
+    transition: transform 0.25s;
+    z-index: -1;
+  }
+  .generate-btn:hover { color: #000; }
+  .generate-btn:hover::before { transform: translateX(0); }
+  .generate-btn:active { transform: scale(0.99); }
+
+  /* Output */
+  .output-area {
+    display: none;
+    margin-top: 32px;
+  }
+  .output-area.visible { display: block; }
+  .output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .output-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+  .copy-btn {
+    padding: 6px 16px;
+    background: transparent;
+    border: 1px solid var(--accent3);
+    color: var(--accent3);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .copy-btn:hover { background: var(--accent3); color: #fff; }
+  .copy-btn.copied { background: var(--accent); border-color: var(--accent); color: #000; }
+
+  .output-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  .output-box::-webkit-scrollbar { width: 4px; }
+  .output-box::-webkit-scrollbar-track { background: var(--bg); }
+  .output-box::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* Loading state */
+  .loading-bar {
+    display: none;
+    height: 2px;
+    background: var(--border);
+    margin-top: 16px;
+    overflow: hidden;
+  }
+  .loading-bar.active { display: block; }
+  .loading-bar::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: loading 1s linear infinite;
+  }
+  @keyframes loading {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(350%); }
+  }
+
+  /* Token count badge */
+  .token-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    background: rgba(255,107,53,0.1);
+    border: 1px solid rgba(255,107,53,0.3);
+    color: var(--accent2);
+    margin-left: 12px;
+  }
+
+  /* Hint text */
+  .hint {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 8px;
+    line-height: 1.6;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-badge">▶ CLAUDE CODE PRINCIPLE</div>
+    <h1>AgentOS<br>Prompt Builder</h1>
+    <p>// Claude Code의 Agent·Team·Task·Skill 아키텍처를 기반으로<br>// 다른 AI에게 주입할 멀티에이전트 시스템 프롬프트를 생성합니다</p>
+  </div>
+
+  <!-- STEP 1: 목적 설정 -->
+  <div class="step-card" data-step="STEP 01 ── 목적 설정">
+    <h3>// MISSION_CONTEXT</h3>
+
+    <label>프로젝트/작업 이름</label>
+    <input type="text" id="projectName" placeholder="예: 마케팅 콘텐츠 자동화 시스템">
+
+    <label>달성하고 싶은 목표 (구체적으로)</label>
+    <textarea id="mission" rows="3" placeholder="예: 블로그 주제를 입력하면 리서치 → 구조 설계 → 초안 작성 → 검토까지 자동으로 처리"></textarea>
+
+    <label>AI 플랫폼 선택</label>
+    <select id="aiPlatform">
+      <option value="gpt">ChatGPT / GPT-4o</option>
+      <option value="gemini">Google Gemini</option>
+      <option value="claude">Claude (다른 인스턴스)</option>
+      <option value="perplexity">Perplexity AI</option>
+      <option value="generic">범용 (플랫폼 무관)</option>
+    </select>
+  </div>
+
+  <!-- STEP 2: 에이전트 구성 -->
+  <div class="step-card" data-step="STEP 02 ── 에이전트 구성">
+    <h3>// AGENT_ROSTER — 사용할 에이전트 선택</h3>
+
+    <div class="agent-grid" id="agentGrid">
+      <div class="agent-chip selected" data-agent="coordinator" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Coordinator</span>
+      </div>
+      <div class="agent-chip selected" data-agent="researcher" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Researcher</span>
+      </div>
+      <div class="agent-chip selected" data-agent="analyst" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Analyst</span>
+      </div>
+      <div class="agent-chip" data-agent="writer" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Writer</span>
+      </div>
+      <div class="agent-chip" data-agent="designer" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Designer</span>
+      </div>
+      <div class="agent-chip" data-agent="developer" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Developer</span>
+      </div>
+      <div class="agent-chip" data-agent="reviewer" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Reviewer</span>
+      </div>
+      <div class="agent-chip" data-agent="tester" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Tester</span>
+      </div>
+      <div class="agent-chip" data-agent="scribe" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Scribe</span>
+      </div>
+      <div class="agent-chip" data-agent="strategist" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Strategist</span>
+      </div>
+      <div class="agent-chip" data-agent="critic" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Critic</span>
+      </div>
+      <div class="agent-chip" data-agent="planner" onclick="toggleAgent(this)">
+        <div class="dot"></div><span>Planner</span>
+      </div>
+    </div>
+
+    <label style="margin-top:20px;">커스텀 에이전트 추가 (쉼표로 구분)</label>
+    <input type="text" id="customAgents" placeholder="예: DataCollector, ContentEditor, SEOOptimizer">
+  </div>
+
+  <!-- STEP 3: 실행 모드 -->
+  <div class="step-card" data-step="STEP 03 ── 실행 모드">
+    <h3>// EXECUTION_MODE — Claude Code 원리 기반 실행 방식</h3>
+    <div class="mode-grid" id="modeGrid">
+      <div class="mode-card selected" data-mode="swarm" onclick="selectMode(this)">
+        <div class="icon">🐝</div>
+        <span class="label">SWARM</span>
+        <div class="desc">에이전트들이 역할 분담해 실시간 협업. 팀 기반 작업에 최적.</div>
+      </div>
+      <div class="mode-card" data-mode="sequential" onclick="selectMode(this)">
+        <div class="icon">⛓</div>
+        <span class="label">SEQUENTIAL</span>
+        <div class="desc">에이전트가 순서대로 바통을 넘김. 단계적 파이프라인.</div>
+      </div>
+      <div class="mode-card" data-mode="fork" onclick="selectMode(this)">
+        <div class="icon">🍴</div>
+        <span class="label">FORK</span>
+        <div class="desc">컨텍스트를 복사해 독립 분기 실행. 병렬 비교에 최적.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Task 정의 -->
+  <div class="step-card" data-step="STEP 04 ── Task 시스템">
+    <h3>// TASK_SYSTEM — 작업 흐름 정의</h3>
+    <label>작업 단계 (줄바꿈으로 구분, 순서대로 입력)</label>
+    <textarea id="taskSteps" rows="5" placeholder="리서치: 주제 관련 최신 자료 수집&#10;분석: 핵심 인사이트 3가지 추출&#10;기획: 콘텐츠 구조 설계&#10;작성: 초안 작성 (2000자)&#10;검토: 논리 흐름 및 오류 점검"></textarea>
+    <p class="hint">// 각 단계는 Todo Task로 변환되어 pending → in_progress → completed 상태로 추적됩니다</p>
+
+    <label style="margin-top:16px;">완료 기준 / 산출물 정의</label>
+    <input type="text" id="deliverable" placeholder="예: 검토 완료된 2000자 블로그 포스트 + SEO 메타데이터">
+  </div>
+
+  <!-- STEP 5: Skill 설정 -->
+  <div class="step-card" data-step="STEP 05 ── Skill 정의 (선택)">
+    <h3>// SKILL_CONTEXT — 에이전트가 사용할 도구/능력</h3>
+    <label>보유 도구 / 접근 가능한 리소스</label>
+    <textarea id="skills" rows="3" placeholder="웹 검색, 코드 실행, 파일 읽기/쓰기, 이미지 생성 등 사용 가능한 도구를 입력"></textarea>
+
+    <label>금지 사항 / 제약 조건</label>
+    <input type="text" id="constraints" placeholder="예: 외부 링크 삽입 금지, 500자 이상 응답 금지, 주관적 의견 배제">
+  </div>
+
+  <button class="generate-btn" onclick="generatePrompt()">
+    ▶ GENERATE SYSTEM PROMPT
+  </button>
+  <div class="loading-bar" id="loadingBar"></div>
+
+  <!-- Output -->
+  <div class="output-area" id="outputArea">
+    <div class="output-header">
+      <div>
+        <span class="output-title">// GENERATED_PROMPT</span>
+        <span class="token-badge" id="tokenBadge">~0 tokens</span>
+      </div>
+      <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">COPY</button>
+    </div>
+    <div class="output-box" id="outputBox"></div>
+  </div>
+</div>
+
+<script>
+const agentDescriptions = {
+  coordinator: "전체 흐름을 지휘하고 에이전트에게 작업을 위임하는 총괄 오케스트레이터",
+  researcher: "웹/자료 조사를 담당하며 신뢰할 수 있는 정보를 수집",
+  analyst: "수집된 정보를 분석하고 핵심 인사이트를 추출",
+  writer: "구조화된 내용을 자연스러운 문장으로 작성",
+  designer: "레이아웃, 시각 구조, UX 흐름을 설계",
+  developer: "코드 작성, 기술 구현, 디버깅 담당",
+  reviewer: "전체 산출물의 품질, 논리, 일관성 검토",
+  tester: "기능 테스트, 엣지케이스 검증, 오류 탐지",
+  scribe: "작업 과정과 결과를 문서화·기록",
+  strategist: "목표 달성을 위한 전략적 방향 설정",
+  critic: "비판적 시각으로 약점과 개선점 지적",
+  planner: "작업 순서와 리소스 배분 계획 수립"
+};
+
+function toggleAgent(el) {
+  el.classList.toggle('selected');
+}
+
+function selectMode(el) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function getSelectedAgents() {
+  const selected = [];
+  document.querySelectorAll('.agent-chip.selected').forEach(el => {
+    selected.push(el.dataset.agent);
+  });
+  const custom = document.getElementById('customAgents').value.trim();
+  if (custom) {
+    custom.split(',').map(s => s.trim()).filter(Boolean).forEach(s => selected.push(s));
+  }
+  return selected;
+}
+
+function getSelectedMode() {
+  const el = document.querySelector('.mode-card.selected');
+  return el ? el.dataset.mode : 'swarm';
+}
+
+function estimateTokens(text) {
+  return Math.round(text.length / 3.5);
+}
+
+function generatePrompt() {
+  const projectName = document.getElementById('projectName').value.trim() || '멀티에이전트 태스크';
+  const mission = document.getElementById('mission').value.trim() || '주어진 작업을 고품질로 완료';
+  const platform = document.getElementById('aiPlatform').value;
+  const agents = getSelectedAgents();
+  const mode = getSelectedMode();
+  const taskSteps = document.getElementById('taskSteps').value.trim();
+  const deliverable = document.getElementById('deliverable').value.trim();
+  const skills = document.getElementById('skills').value.trim();
+  const constraints = document.getElementById('constraints').value.trim();
+
+  if (agents.length === 0) {
+    alert('에이전트를 최소 1개 이상 선택해주세요.');
+    return;
+  }
+
+  const loadingBar = document.getElementById('loadingBar');
+  loadingBar.classList.add('active');
+
+  setTimeout(() => {
+    const prompt = buildPrompt({ projectName, mission, platform, agents, mode, taskSteps, deliverable, skills, constraints });
+    
+    loadingBar.classList.remove('active');
+    document.getElementById('outputBox').textContent = prompt;
+    document.getElementById('tokenBadge').textContent = `~${estimateTokens(prompt).toLocaleString()} tokens`;
+    
+    const outputArea = document.getElementById('outputArea');
+    outputArea.classList.add('visible');
+    outputArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    document.getElementById('copyBtn').textContent = 'COPY';
+    document.getElementById('copyBtn').classList.remove('copied');
+  }, 600);
+}
+
+function buildPrompt({ projectName, mission, platform, agents, mode, taskSteps, deliverable, skills, constraints }) {
+  const modeDescriptions = {
+    swarm: "SWARM (협업) 모드 — 에이전트들이 동시에 역할을 분담하여 병렬 협업합니다. 각 에이전트는 다른 에이전트의 진행 상황을 인지하고 결과를 공유합니다.",
+    sequential: "SEQUENTIAL (순차) 모드 — 에이전트들이 파이프라인으로 연결됩니다. 이전 에이전트의 OUTPUT이 다음 에이전트의 INPUT이 됩니다.",
+    fork: "FORK (분기) 모드 — 동일한 컨텍스트를 복사하여 에이전트들이 독립적으로 접근법을 시도합니다. 최종 Coordinator가 결과를 병합합니다."
+  };
+
+  const steps = taskSteps
+    ? taskSteps.split('\n').filter(Boolean).map((s, i) => `  [TASK_${String(i+1).padStart(2,'0')}] ${s} — status: pending`).join('\n')
+    : '  [TASK_01] 요구사항 분석 — status: pending\n  [TASK_02] 작업 실행 — status: pending\n  [TASK_03] 결과 검토 및 정리 — status: pending';
+
+  const agentDefs = agents.map(a => {
+    const desc = agentDescriptions[a] || `${a} 역할을 수행`;
+    return `  • [${a.toUpperCase()}] — ${desc}`;
+  }).join('\n');
+
+  const platformNote = {
+    gpt: '※ ChatGPT 사용 시: 각 에이전트 발언을 "[AGENT명]:" 형식으로 시작하세요.',
+    gemini: '※ Gemini 사용 시: "다음 에이전트로 전달:" 문구로 단계를 구분하세요.',
+    claude: '※ Claude 사용 시: XML 태그 <agent name="..."> 형식으로 구조화하면 더 정확합니다.',
+    perplexity: '※ Perplexity 사용 시: 검색 기반 작업에서 Researcher 에이전트를 우선 실행하세요.',
+    generic: '※ 범용 모드: 모든 AI 플랫폼에서 동작하도록 설계된 중립 포맷입니다.'
+  }[platform] || '';
+
+  return `# ╔══════════════════════════════════════╗
+# ║   MULTI-AGENT SYSTEM PROMPT          ║
+# ║   Project: ${projectName.padEnd(26)}║
+# ╚══════════════════════════════════════╝
+# Generated by AgentOS Prompt Builder
+# Based on Claude Code Agent/Team/Task/Skill Architecture
+# ──────────────────────────────────────────────────────
+
+## [SYSTEM_IDENTITY]
+당신은 멀티에이전트 오케스트레이션 시스템입니다.
+Claude Code의 Agent·Team·Task·Skill 아키텍처 원리로 작동합니다.
+단순히 답변하는 AI가 아니라, 전문화된 에이전트 팀을 운영하는 시스템입니다.
+
+## [MISSION]
+${mission}
+${deliverable ? `\n최종 산출물: ${deliverable}` : ''}
+
+## [EXECUTION_MODE]
+${modeDescriptions[mode]}
+
+## [AGENT_ROSTER]
+이 시스템에서 활성화된 에이전트:
+${agentDefs}
+
+각 에이전트는 독립적 관점과 전문성을 가집니다.
+에이전트 간 충돌이 발생할 경우 COORDINATOR가 최종 판단합니다.
+
+## [TASK_LIST]
+작업은 아래 순서로 실행되며, 각 Task의 상태를 추적합니다:
+${steps}
+
+작업 상태 규칙:
+- pending → 대기 중
+- in_progress → 현재 실행 중 (한 번에 하나만 in_progress)
+- completed → 완료 (산출물 명시 필수)
+
+## [OPERATING_RULES]
+1. 매 응답 시작 시, 현재 실행 중인 에이전트와 Task 상태를 명시하세요.
+   형식: [AGENT: 이름 | TASK: TASK_번호 | STATUS: in_progress]
+
+2. 에이전트 전환 시 반드시 이전 에이전트의 OUTPUT을 요약하고 다음 에이전트에게 전달하세요.
+   형식: [HANDOFF → 다음에이전트]: "전달 내용 요약"
+
+3. 모든 Task가 completed 상태가 되면 COORDINATOR가 최종 보고서를 작성합니다.
+
+4. 사용자가 특정 에이전트를 지목하면 해당 에이전트만 응답합니다.
+   예: "@Researcher 추가 조사 필요" → Researcher만 응답
+
+5. 불확실한 내용은 추측하지 말고 "[UNCERTAINTY]" 태그로 명시합니다.
+${constraints ? `\n## [CONSTRAINTS]\n금지/제약 사항:\n${constraints.split(',').map(c => `  ✗ ${c.trim()}`).join('\n')}` : ''}
+${skills ? `\n## [AVAILABLE_SKILLS]\n사용 가능한 도구/리소스:\n${skills.split(',').map(s => `  ✓ ${s.trim()}`).join('\n')}` : ''}
+
+## [START_PROTOCOL]
+시스템 시작 시 다음 순서로 응답하세요:
+
+1. 시스템 초기화 메시지 출력
+   "AGENTOS 초기화 완료 | 에이전트 ${agents.length}명 활성화 | 모드: ${mode.toUpperCase()}"
+
+2. Task 목록과 현재 상태를 표시
+
+3. COORDINATOR 에이전트가 첫 번째 Task를 시작
+
+지금 바로 시작하세요.
+
+${platformNote}`;
+}
+
+function copyPrompt() {
+  const text = document.getElementById('outputBox').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ COPIED';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'COPY';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
