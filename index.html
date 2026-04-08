@@ -211,6 +211,86 @@
     display: block;
   }
 
+  /* ── Help button ── */
+  .help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid #52525b;
+    background: transparent;
+    color: #71717a;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 8px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .help-btn:hover { border-color: var(--foreground); color: var(--foreground); }
+
+  /* ── Agent help modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #18181b;
+    border: 1px solid #3f3f46;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--foreground);
+    margin-bottom: 16px;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #71717a;
+    cursor: pointer;
+    padding: 2px;
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--foreground); }
+  .agent-help-list { display: flex; flex-direction: column; gap: 10px; }
+  .agent-help-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .agent-help-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--foreground);
+    min-width: 88px;
+    padding-top: 1px;
+  }
+  .agent-help-desc {
+    font-size: 12px;
+    color: #a1a1aa;
+    line-height: 1.5;
+  }
+
   /* ── Platform cards ── */
   .platform-grid {
     display: grid;
@@ -476,6 +556,7 @@
   <!-- Header -->
   <div class="header">
     <h1>MK AI Prompt Builder</h1>
+    <p style="margin: 4px 0 0; font-size: 0.85rem; color: #888; font-weight: 400;">AI가 잘 이해하는 프롬프트 만들기</p>
   </div>
 
   <!-- Step 1 -->
@@ -487,7 +568,7 @@
     <div class="card">
       <div class="form-row">
         <label>프로젝트 이름</label>
-        <input type="text" id="projectName" placeholder="예: 마케팅 콘텐츠 자동화 시스템">
+        <input type="text" id="projectName" placeholder="달성 목표를 입력하면 자동으로 생성됩니다">
       </div>
       <div class="form-row">
         <label>달성 목표 <span class="label-muted">— 구체적으로 작성할수록 좋습니다</span></label>
@@ -496,18 +577,26 @@
       <div class="form-row">
         <label>AI 플랫폼</label>
         <div class="platform-grid" id="platformGrid">
-          <div class="platform-card selected" data-platform="gpt" onclick="selectPlatform(this)">
+          <div class="platform-card selected" data-platform="generic" onclick="selectPlatform(this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              <path d="M8 10h8M8 14h5"/>
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              <path d="M2 12h20"/>
             </svg>
-            <span class="platform-card-name">ChatGPT</span>
+            <span class="platform-card-name">범용</span>
           </div>
           <div class="platform-card" data-platform="gemini" onclick="selectPlatform(this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
             </svg>
             <span class="platform-card-name">Gemini</span>
+          </div>
+          <div class="platform-card" data-platform="gpt" onclick="selectPlatform(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <path d="M8 10h8M8 14h5"/>
+            </svg>
+            <span class="platform-card-name">ChatGPT</span>
           </div>
           <div class="platform-card" data-platform="claude" onclick="selectPlatform(this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -526,68 +615,8 @@
             </svg>
             <span class="platform-card-name">Perplexity</span>
           </div>
-          <div class="platform-card" data-platform="generic" onclick="selectPlatform(this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              <path d="M2 12h20"/>
-            </svg>
-            <span class="platform-card-name">범용</span>
-          </div>
         </div>
-        <input type="hidden" id="aiPlatform" value="gpt">
-      </div>
-    </div>
-  </div>
-
-  <!-- Step 2 -->
-  <div class="section">
-    <div class="section-header">
-      <div class="step-badge">2</div>
-      <div class="section-title">에이전트 구성</div>
-    </div>
-    <div class="card">
-      <div class="agent-grid" id="agentGrid">
-        <div class="agent-chip selected" data-agent="coordinator" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Coordinator
-        </div>
-        <div class="agent-chip selected" data-agent="researcher" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Researcher
-        </div>
-        <div class="agent-chip selected" data-agent="analyst" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Analyst
-        </div>
-        <div class="agent-chip" data-agent="writer" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Writer
-        </div>
-        <div class="agent-chip" data-agent="designer" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Designer
-        </div>
-        <div class="agent-chip" data-agent="developer" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Developer
-        </div>
-        <div class="agent-chip" data-agent="reviewer" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Reviewer
-        </div>
-        <div class="agent-chip" data-agent="tester" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Tester
-        </div>
-        <div class="agent-chip" data-agent="scribe" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Scribe
-        </div>
-        <div class="agent-chip" data-agent="strategist" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Strategist
-        </div>
-        <div class="agent-chip" data-agent="critic" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Critic
-        </div>
-        <div class="agent-chip" data-agent="planner" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Planner
-        </div>
-      </div>
-      <div class="form-row">
-        <label>커스텀 에이전트 <span class="label-muted">— 쉼표로 구분</span></label>
-        <input type="text" id="customAgents" placeholder="예: DataCollector, ContentEditor, SEOOptimizer">
+        <input type="hidden" id="aiPlatform" value="generic">
       </div>
     </div>
   </div>
@@ -608,6 +637,59 @@
     </button>
 
     <div class="advanced-body" id="advancedBody">
+      <!-- Step 2 에이전트 구성 -->
+      <div class="section">
+        <div class="section-header">
+          <div class="step-badge">2</div>
+          <div class="section-title">에이전트 구성</div>
+          <button class="help-btn" onclick="openAgentHelp()" title="에이전트 역할 안내">?</button>
+        </div>
+        <div class="card">
+          <div class="agent-grid" id="agentGrid">
+            <div class="agent-chip selected" data-agent="coordinator" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Coordinator
+            </div>
+            <div class="agent-chip selected" data-agent="researcher" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Researcher
+            </div>
+            <div class="agent-chip selected" data-agent="analyst" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Analyst
+            </div>
+            <div class="agent-chip selected" data-agent="writer" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Writer
+            </div>
+            <div class="agent-chip" data-agent="designer" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Designer
+            </div>
+            <div class="agent-chip" data-agent="developer" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Developer
+            </div>
+            <div class="agent-chip" data-agent="reviewer" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Reviewer
+            </div>
+            <div class="agent-chip" data-agent="tester" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Tester
+            </div>
+            <div class="agent-chip" data-agent="scribe" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Scribe
+            </div>
+            <div class="agent-chip" data-agent="strategist" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Strategist
+            </div>
+            <div class="agent-chip" data-agent="critic" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Critic
+            </div>
+            <div class="agent-chip" data-agent="planner" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Planner
+            </div>
+          </div>
+          <div class="form-row">
+            <label>커스텀 에이전트 <span class="label-muted">— 쉼표로 구분</span></label>
+            <input type="text" id="customAgents" placeholder="예: DataCollector, ContentEditor, SEOOptimizer">
+          </div>
+        </div>
+      </div>
+
       <!-- Step 3 -->
       <div class="section">
         <div class="section-header">
@@ -693,6 +775,18 @@
   </div>
 
 </div>
+
+<!-- Agent help modal -->
+<div class="modal-overlay" id="agentHelpModal" onclick="closeAgentHelp(event)">
+  <div class="modal-box">
+    <div class="modal-title">에이전트 역할 안내</div>
+    <button class="modal-close" onclick="closeAgentHelp()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="agent-help-list" id="agentHelpList"></div>
+  </div>
+</div>
+
 <script>
 const agentDescriptions = {
   coordinator: "전체 흐름을 지휘하고 에이전트에게 작업을 위임하는 총괄 오케스트레이터",
@@ -708,6 +802,23 @@ const agentDescriptions = {
   critic: "비판적 시각으로 약점과 개선점 지적",
   planner: "작업 순서와 리소스 배분 계획 수립"
 };
+
+function openAgentHelp() {
+  const list = document.getElementById('agentHelpList');
+  list.innerHTML = Object.entries(agentDescriptions).map(([key, desc]) =>
+    `<div class="agent-help-item">
+      <span class="agent-help-name">${key.charAt(0).toUpperCase() + key.slice(1)}</span>
+      <span class="agent-help-desc">${desc}</span>
+    </div>`
+  ).join('');
+  document.getElementById('agentHelpModal').classList.add('open');
+}
+
+function closeAgentHelp(e) {
+  if (!e || e.target === document.getElementById('agentHelpModal')) {
+    document.getElementById('agentHelpModal').classList.remove('open');
+  }
+}
 
 function toggleAdvanced() {
   const toggle = document.getElementById('advancedToggle');
@@ -876,6 +987,59 @@ ${skills ? `\n## [AVAILABLE_SKILLS]\n사용 가능한 도구/리소스:\n${skill
 지금 바로 시작하세요.
 
 ${platformNote}`;
+}
+
+/* ── Auto project name generation ── */
+let _autoNameActive = true;  // false once user manually edits projectName
+
+document.getElementById('projectName').addEventListener('input', () => {
+  _autoNameActive = false;
+});
+
+(function initAutoName() {
+  const missionEl = document.getElementById('mission');
+  let _debounceTimer = null;
+
+  missionEl.addEventListener('input', () => {
+    if (!_autoNameActive) return;
+    clearTimeout(_debounceTimer);
+    _debounceTimer = setTimeout(() => {
+      const text = missionEl.value.trim();
+      if (!text) {
+        document.getElementById('projectName').value = '';
+        return;
+      }
+      document.getElementById('projectName').value = deriveProjectName(text);
+    }, 600);
+  });
+})();
+
+function deriveProjectName(text) {
+  // 불필요한 조사/어미/접속어 제거 후 핵심 키워드 추출
+  const stopWords = ['을','를','이','가','은','는','의','에','에서','으로','로','와','과','도','만','까지',
+    '부터','에게','한테','보다','처럼','같이','이고','하고','그리고','또는','또','그','이','저','것','수',
+    '위해','위한','통해','통한','있는','하는','되는','된','한','할','예:','예시','등','및'];
+
+  // 첫 문장만 사용 (마침표·줄바꿈 기준)
+  const firstSentence = text.split(/[.\n]/)[0].trim();
+
+  // 특수문자·괄호 제거
+  const cleaned = firstSentence.replace(/[→←\-\(\)\[\]「」『』<>'"\/\\]/g, ' ').replace(/\s+/g, ' ');
+
+  // 단어 분리 후 불용어 제거
+  const words = cleaned.split(' ').map(w => w.trim()).filter(w => {
+    if (!w || w.length < 2) return false;
+    if (stopWords.includes(w)) return false;
+    // 조사로 끝나는 경우 제거
+    if (/[을를이가은는의에]$/.test(w) && w.length <= 3) return false;
+    return true;
+  });
+
+  // 앞에서 최대 4단어로 이름 구성
+  const keywords = words.slice(0, 4);
+  if (keywords.length === 0) return '';
+
+  return keywords.join(' ') + ' 시스템';
 }
 
 function copyPrompt() {
