@@ -497,18 +497,26 @@
       <div class="form-row">
         <label>AI 플랫폼</label>
         <div class="platform-grid" id="platformGrid">
-          <div class="platform-card selected" data-platform="gpt" onclick="selectPlatform(this)">
+          <div class="platform-card selected" data-platform="generic" onclick="selectPlatform(this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              <path d="M8 10h8M8 14h5"/>
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              <path d="M2 12h20"/>
             </svg>
-            <span class="platform-card-name">ChatGPT</span>
+            <span class="platform-card-name">범용</span>
           </div>
           <div class="platform-card" data-platform="gemini" onclick="selectPlatform(this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
             </svg>
             <span class="platform-card-name">Gemini</span>
+          </div>
+          <div class="platform-card" data-platform="gpt" onclick="selectPlatform(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <path d="M8 10h8M8 14h5"/>
+            </svg>
+            <span class="platform-card-name">ChatGPT</span>
           </div>
           <div class="platform-card" data-platform="claude" onclick="selectPlatform(this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -527,16 +535,8 @@
             </svg>
             <span class="platform-card-name">Perplexity</span>
           </div>
-          <div class="platform-card" data-platform="generic" onclick="selectPlatform(this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-              <path d="M2 12h20"/>
-            </svg>
-            <span class="platform-card-name">범용</span>
-          </div>
         </div>
-        <input type="hidden" id="aiPlatform" value="gpt">
+        <input type="hidden" id="aiPlatform" value="generic">
       </div>
     </div>
   </div>
