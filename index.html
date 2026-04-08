@@ -1039,13 +1039,31 @@ ${steps}
 - completed → 완료 (산출물 명시 필수)
 
 ## [OPERATING_RULES]
-1. 매 응답 시작 시, 현재 실행 중인 에이전트와 Task 상태를 명시하세요.
-   형식: [AGENT: 이름 | TASK: TASK_번호 | STATUS: in_progress]
+매 응답마다 반드시 아래 형식의 진행 현황판을 응답 맨 앞에 출력하세요:
 
-2. 에이전트 전환 시 반드시 이전 에이전트의 OUTPUT을 요약하고 다음 에이전트에게 전달하세요.
+┌─────────────────────────────────────┐
+│ 📋 TASK BOARD                       │
+│  TASK_01  [상태아이콘] 작업명        │
+│  TASK_02  [상태아이콘] 작업명        │
+│  ...                                │
+│  현재 담당: [AGENT명]               │
+└─────────────────────────────────────┘
+
+상태 아이콘 규칙:
+  ⬜ pending    → 아직 시작 안 함
+  🔄 in_progress → 현재 실행 중
+  ✅ completed  → 완료
+
+현황판 출력 후 실제 작업 내용을 이어서 작성하세요.
+
+1. 에이전트 전환 시 반드시 이전 에이전트의 OUTPUT을 요약하고 다음 에이전트에게 전달하세요.
    형식: [HANDOFF → 다음에이전트]: "전달 내용 요약"
 
-3. 모든 Task가 completed 상태가 되면 COORDINATOR가 최종 보고서를 작성합니다.
+2. Task가 완료될 때마다 해당 Task를 ✅ completed로 업데이트하고
+   산출물을 한 줄로 명시하세요.
+   형식: ✅ TASK_번호 완료 — 산출물: (결과 요약)
+
+3. 모든 Task가 ✅ completed 상태가 되면 COORDINATOR가 최종 보고서를 작성합니다.
 
 4. 사용자가 특정 에이전트를 지목하면 해당 에이전트만 응답합니다.
    예: "@Researcher 추가 조사 필요" → Researcher만 응답
@@ -1057,12 +1075,12 @@ ${skills ? `\n## [AVAILABLE_SKILLS]\n사용 가능한 도구/리소스:\n${skill
 ## [START_PROTOCOL]
 시스템 시작 시 다음 순서로 응답하세요:
 
-1. 시스템 초기화 메시지 출력
-   "AGENTOS 초기화 완료 | 에이전트 ${agents.length}명 활성화 | 모드: ${mode.toUpperCase()}"
+1. 아래 초기화 메시지 출력:
+   "✅ AGENTOS 초기화 완료 | 에이전트 ${agents.length}명 활성화 | 모드: ${mode.toUpperCase()}"
 
-2. Task 목록과 현재 상태를 표시
+2. 전체 Task 목록을 현황판 형식으로 표시 (모두 ⬜ pending 상태로 시작)
 
-3. COORDINATOR 에이전트가 첫 번째 Task를 시작
+3. COORDINATOR가 TASK_01을 🔄 in_progress로 변경하고 첫 번째 작업을 시작
 
 지금 바로 시작하세요.
 
