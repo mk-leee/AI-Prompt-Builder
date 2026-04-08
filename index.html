@@ -301,6 +301,53 @@
     line-height: 1.4;
   }
 
+  /* ── Advanced settings toggle ── */
+  .advanced-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--muted-fg);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s;
+    margin-bottom: 0;
+  }
+  .advanced-toggle:hover {
+    border-color: #3f3f46;
+    color: var(--foreground);
+    background: rgba(255,255,255,0.02);
+  }
+  .advanced-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .advanced-toggle svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  .advanced-chevron {
+    transition: transform 0.2s;
+  }
+  .advanced-toggle.open .advanced-chevron {
+    transform: rotate(180deg);
+  }
+  .advanced-body {
+    display: none;
+    margin-top: 12px;
+  }
+  .advanced-body.open {
+    display: block;
+  }
+
   /* ── Divider ── */
   .divider {
     height: 1px;
@@ -545,64 +592,82 @@
     </div>
   </div>
 
-  <!-- Step 3 -->
+  <!-- 세부설정 토글 -->
   <div class="section">
-    <div class="section-header">
-      <div class="step-badge">3</div>
-      <div class="section-title">실행 모드</div>
-    </div>
-    <div class="mode-grid" id="modeGrid">
-      <div class="mode-card selected" data-mode="swarm" onclick="selectMode(this)">
-        <span class="mode-icon">🐝</span>
-        <span class="mode-label">SWARM</span>
-        <div class="mode-desc">에이전트들이 역할 분담해 실시간 협업. 팀 기반 작업에 최적.</div>
+    <button class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">
+      <div class="advanced-toggle-left">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        세부설정
       </div>
-      <div class="mode-card" data-mode="sequential" onclick="selectMode(this)">
-        <span class="mode-icon">⛓</span>
-        <span class="mode-label">SEQUENTIAL</span>
-        <div class="mode-desc">에이전트가 순서대로 바통을 넘김. 단계적 파이프라인.</div>
-      </div>
-      <div class="mode-card" data-mode="fork" onclick="selectMode(this)">
-        <span class="mode-icon">🍴</span>
-        <span class="mode-label">FORK</span>
-        <div class="mode-desc">컨텍스트를 복사해 독립 분기 실행. 병렬 비교에 최적.</div>
-      </div>
-    </div>
-  </div>
+      <svg class="advanced-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m6 9 6 6 6-6"/>
+      </svg>
+    </button>
 
-  <!-- Step 4 -->
-  <div class="section">
-    <div class="section-header">
-      <div class="step-badge">4</div>
-      <div class="section-title">Task 정의</div>
-    </div>
-    <div class="card">
-      <div class="form-row">
-        <label>작업 단계 <span class="label-muted">— 줄바꿈으로 구분</span></label>
-        <textarea id="taskSteps" rows="5" placeholder="리서치: 주제 관련 최신 자료 수집&#10;분석: 핵심 인사이트 3가지 추출&#10;기획: 콘텐츠 구조 설계&#10;작성: 초안 작성 (2000자)&#10;검토: 논리 흐름 및 오류 점검"></textarea>
-        <p class="form-hint">각 단계는 Todo Task로 변환되어 pending → in_progress → completed 상태로 추적됩니다.</p>
+    <div class="advanced-body" id="advancedBody">
+      <!-- Step 3 -->
+      <div class="section">
+        <div class="section-header">
+          <div class="step-badge">3</div>
+          <div class="section-title">실행 모드</div>
+        </div>
+        <div class="mode-grid" id="modeGrid">
+          <div class="mode-card selected" data-mode="swarm" onclick="selectMode(this)">
+            <span class="mode-icon">🐝</span>
+            <span class="mode-label">SWARM</span>
+            <div class="mode-desc">에이전트들이 역할 분담해 실시간 협업. 팀 기반 작업에 최적.</div>
+          </div>
+          <div class="mode-card" data-mode="sequential" onclick="selectMode(this)">
+            <span class="mode-icon">⛓</span>
+            <span class="mode-label">SEQUENTIAL</span>
+            <div class="mode-desc">에이전트가 순서대로 바통을 넘김. 단계적 파이프라인.</div>
+          </div>
+          <div class="mode-card" data-mode="fork" onclick="selectMode(this)">
+            <span class="mode-icon">🍴</span>
+            <span class="mode-label">FORK</span>
+            <div class="mode-desc">컨텍스트를 복사해 독립 분기 실행. 병렬 비교에 최적.</div>
+          </div>
+        </div>
       </div>
-      <div class="form-row">
-        <label>완료 기준 / 산출물</label>
-        <input type="text" id="deliverable" placeholder="예: 검토 완료된 2000자 블로그 포스트 + SEO 메타데이터">
-      </div>
-    </div>
-  </div>
 
-  <!-- Step 5 -->
-  <div class="section">
-    <div class="section-header">
-      <div class="step-badge">5</div>
-      <div class="section-title">Skill 설정 <span class="section-optional">(선택)</span></div>
-    </div>
-    <div class="card">
-      <div class="form-row">
-        <label>보유 도구 / 리소스</label>
-        <textarea id="skills" rows="3" placeholder="웹 검색, 코드 실행, 파일 읽기/쓰기, 이미지 생성 등 사용 가능한 도구를 입력"></textarea>
+      <!-- Step 4 -->
+      <div class="section">
+        <div class="section-header">
+          <div class="step-badge">4</div>
+          <div class="section-title">Task 정의</div>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <label>작업 단계 <span class="label-muted">— 줄바꿈으로 구분</span></label>
+            <textarea id="taskSteps" rows="5" placeholder="리서치: 주제 관련 최신 자료 수집&#10;분석: 핵심 인사이트 3가지 추출&#10;기획: 콘텐츠 구조 설계&#10;작성: 초안 작성 (2000자)&#10;검토: 논리 흐름 및 오류 점검"></textarea>
+            <p class="form-hint">각 단계는 Todo Task로 변환되어 pending → in_progress → completed 상태로 추적됩니다.</p>
+          </div>
+          <div class="form-row">
+            <label>완료 기준 / 산출물</label>
+            <input type="text" id="deliverable" placeholder="예: 검토 완료된 2000자 블로그 포스트 + SEO 메타데이터">
+          </div>
+        </div>
       </div>
-      <div class="form-row">
-        <label>금지 사항 / 제약 조건</label>
-        <input type="text" id="constraints" placeholder="예: 외부 링크 삽입 금지, 500자 이상 응답 금지, 주관적 의견 배제">
+
+      <!-- Step 5 -->
+      <div class="section">
+        <div class="section-header">
+          <div class="step-badge">5</div>
+          <div class="section-title">Skill 설정 <span class="section-optional">(선택)</span></div>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <label>보유 도구 / 리소스</label>
+            <textarea id="skills" rows="3" placeholder="웹 검색, 코드 실행, 파일 읽기/쓰기, 이미지 생성 등 사용 가능한 도구를 입력"></textarea>
+          </div>
+          <div class="form-row">
+            <label>금지 사항 / 제약 조건</label>
+            <input type="text" id="constraints" placeholder="예: 외부 링크 삽입 금지, 500자 이상 응답 금지, 주관적 의견 배제">
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -643,6 +708,13 @@ const agentDescriptions = {
   critic: "비판적 시각으로 약점과 개선점 지적",
   planner: "작업 순서와 리소스 배분 계획 수립"
 };
+
+function toggleAdvanced() {
+  const toggle = document.getElementById('advancedToggle');
+  const body = document.getElementById('advancedBody');
+  toggle.classList.toggle('open');
+  body.classList.toggle('open');
+}
 
 function selectPlatform(el) {
   document.querySelectorAll('.platform-card').forEach(c => c.classList.remove('selected'));
