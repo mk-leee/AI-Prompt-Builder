@@ -488,7 +488,7 @@
     <div class="card">
       <div class="form-row">
         <label>프로젝트 이름</label>
-        <input type="text" id="projectName" placeholder="예: 마케팅 콘텐츠 자동화 시스템">
+        <input type="text" id="projectName" placeholder="달성 목표를 입력하면 자동으로 생성됩니다">
       </div>
       <div class="form-row">
         <label>달성 목표 <span class="label-muted">— 구체적으로 작성할수록 좋습니다</span></label>
@@ -877,6 +877,59 @@ ${skills ? `\n## [AVAILABLE_SKILLS]\n사용 가능한 도구/리소스:\n${skill
 지금 바로 시작하세요.
 
 ${platformNote}`;
+}
+
+/* ── Auto project name generation ── */
+let _autoNameActive = true;  // false once user manually edits projectName
+
+document.getElementById('projectName').addEventListener('input', () => {
+  _autoNameActive = false;
+});
+
+(function initAutoName() {
+  const missionEl = document.getElementById('mission');
+  let _debounceTimer = null;
+
+  missionEl.addEventListener('input', () => {
+    if (!_autoNameActive) return;
+    clearTimeout(_debounceTimer);
+    _debounceTimer = setTimeout(() => {
+      const text = missionEl.value.trim();
+      if (!text) {
+        document.getElementById('projectName').value = '';
+        return;
+      }
+      document.getElementById('projectName').value = deriveProjectName(text);
+    }, 600);
+  });
+})();
+
+function deriveProjectName(text) {
+  // 불필요한 조사/어미/접속어 제거 후 핵심 키워드 추출
+  const stopWords = ['을','를','이','가','은','는','의','에','에서','으로','로','와','과','도','만','까지',
+    '부터','에게','한테','보다','처럼','같이','이고','하고','그리고','또는','또','그','이','저','것','수',
+    '위해','위한','통해','통한','있는','하는','되는','된','한','할','예:','예시','등','및'];
+
+  // 첫 문장만 사용 (마침표·줄바꿈 기준)
+  const firstSentence = text.split(/[.\n]/)[0].trim();
+
+  // 특수문자·괄호 제거
+  const cleaned = firstSentence.replace(/[→←\-\(\)\[\]「」『』<>'"\/\\]/g, ' ').replace(/\s+/g, ' ');
+
+  // 단어 분리 후 불용어 제거
+  const words = cleaned.split(' ').map(w => w.trim()).filter(w => {
+    if (!w || w.length < 2) return false;
+    if (stopWords.includes(w)) return false;
+    // 조사로 끝나는 경우 제거
+    if (/[을를이가은는의에]$/.test(w) && w.length <= 3) return false;
+    return true;
+  });
+
+  // 앞에서 최대 4단어로 이름 구성
+  const keywords = words.slice(0, 4);
+  if (keywords.length === 0) return '';
+
+  return keywords.join(' ') + ' 시스템';
 }
 
 function copyPrompt() {
