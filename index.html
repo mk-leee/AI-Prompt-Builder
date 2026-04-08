@@ -541,58 +541,6 @@
     </div>
   </div>
 
-  <!-- Step 2 -->
-  <div class="section">
-    <div class="section-header">
-      <div class="step-badge">2</div>
-      <div class="section-title">에이전트 구성</div>
-    </div>
-    <div class="card">
-      <div class="agent-grid" id="agentGrid">
-        <div class="agent-chip selected" data-agent="coordinator" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Coordinator
-        </div>
-        <div class="agent-chip selected" data-agent="researcher" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Researcher
-        </div>
-        <div class="agent-chip selected" data-agent="analyst" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Analyst
-        </div>
-        <div class="agent-chip" data-agent="writer" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Writer
-        </div>
-        <div class="agent-chip" data-agent="designer" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Designer
-        </div>
-        <div class="agent-chip" data-agent="developer" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Developer
-        </div>
-        <div class="agent-chip" data-agent="reviewer" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Reviewer
-        </div>
-        <div class="agent-chip" data-agent="tester" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Tester
-        </div>
-        <div class="agent-chip" data-agent="scribe" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Scribe
-        </div>
-        <div class="agent-chip" data-agent="strategist" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Strategist
-        </div>
-        <div class="agent-chip" data-agent="critic" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Critic
-        </div>
-        <div class="agent-chip" data-agent="planner" onclick="toggleAgent(this)">
-          <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Planner
-        </div>
-      </div>
-      <div class="form-row">
-        <label>커스텀 에이전트 <span class="label-muted">— 쉼표로 구분</span></label>
-        <input type="text" id="customAgents" placeholder="예: DataCollector, ContentEditor, SEOOptimizer">
-      </div>
-    </div>
-  </div>
-
   <!-- 세부설정 토글 -->
   <div class="section">
     <button class="advanced-toggle" id="advancedToggle" onclick="toggleAdvanced()">
@@ -609,6 +557,58 @@
     </button>
 
     <div class="advanced-body" id="advancedBody">
+      <!-- Step 2 에이전트 구성 -->
+      <div class="section">
+        <div class="section-header">
+          <div class="step-badge">2</div>
+          <div class="section-title">에이전트 구성</div>
+        </div>
+        <div class="card">
+          <div class="agent-grid" id="agentGrid">
+            <div class="agent-chip selected" data-agent="coordinator" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Coordinator
+            </div>
+            <div class="agent-chip selected" data-agent="researcher" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Researcher
+            </div>
+            <div class="agent-chip selected" data-agent="analyst" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Analyst
+            </div>
+            <div class="agent-chip selected" data-agent="writer" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Writer
+            </div>
+            <div class="agent-chip" data-agent="designer" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Designer
+            </div>
+            <div class="agent-chip" data-agent="developer" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Developer
+            </div>
+            <div class="agent-chip" data-agent="reviewer" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Reviewer
+            </div>
+            <div class="agent-chip" data-agent="tester" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Tester
+            </div>
+            <div class="agent-chip" data-agent="scribe" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Scribe
+            </div>
+            <div class="agent-chip" data-agent="strategist" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Strategist
+            </div>
+            <div class="agent-chip" data-agent="critic" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Critic
+            </div>
+            <div class="agent-chip" data-agent="planner" onclick="toggleAgent(this)">
+              <svg class="chip-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Planner
+            </div>
+          </div>
+          <div class="form-row">
+            <label>커스텀 에이전트 <span class="label-muted">— 쉼표로 구분</span></label>
+            <input type="text" id="customAgents" placeholder="예: DataCollector, ContentEditor, SEOOptimizer">
+          </div>
+        </div>
+      </div>
+
       <!-- Step 3 -->
       <div class="section">
         <div class="section-header">
