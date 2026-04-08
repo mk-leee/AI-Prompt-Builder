@@ -803,6 +803,86 @@ const agentDescriptions = {
   planner: "작업 순서와 리소스 배분 계획 수립"
 };
 
+/* ── Auto-fill recommended defaults for Task & Skill fields ── */
+const _fieldEdited = { taskSteps: false, deliverable: false, skills: false, constraints: false };
+
+['taskSteps', 'deliverable', 'skills', 'constraints'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => { _fieldEdited[id] = true; });
+});
+
+function buildRecommendedDefaults(missionText) {
+  // 미션 텍스트에서 핵심 동사/명사 추출 (간단 키워드)
+  const hasCoding   = /코드|개발|구현|프로그램|앱|웹|API/i.test(missionText);
+  const hasContent  = /콘텐츠|블로그|글|작성|포스트|문서|기사/i.test(missionText);
+  const hasResearch = /조사|리서치|분석|데이터|수집|탐색/i.test(missionText);
+  const hasDesign   = /디자인|UI|UX|레이아웃|화면|기획/i.test(missionText);
+  const hasMarketing = /마케팅|홍보|광고|캠페인|브랜드/i.test(missionText);
+
+  // 작업 단계
+  let steps;
+  if (hasCoding) {
+    steps = `요구사항 분석: 기능 목록 및 기술 스택 정의\n설계: 아키텍처 및 데이터 구조 설계\n구현: 핵심 기능 코드 작성\n테스트: 기능 검증 및 엣지케이스 점검\n문서화: README 및 주석 정리`;
+  } else if (hasContent || hasMarketing) {
+    steps = `리서치: 주제 관련 최신 자료 및 트렌드 수집\n분석: 핵심 메시지 및 타겟 인사이트 도출\n기획: 콘텐츠 구조 및 흐름 설계\n작성: 초안 작성 및 표현 다듬기\n검토: 품질 점검 및 최종 수정`;
+  } else if (hasDesign) {
+    steps = `리서치: 레퍼런스 및 사용자 니즈 조사\n분석: 핵심 UX 요구사항 도출\n설계: 와이어프레임 및 구조 기획\n디자인: 시각 요소 구체화\n검토: 일관성 및 사용성 점검`;
+  } else if (hasResearch) {
+    steps = `주제 설정: 조사 범위 및 핵심 질문 정의\n자료 수집: 신뢰할 수 있는 출처에서 정보 수집\n분석: 수집 데이터 정리 및 인사이트 추출\n종합: 핵심 결론 및 시사점 도출\n보고: 결과 문서화 및 시각화`;
+  } else {
+    steps = `요구사항 파악: 목표와 기대 결과 명확화\n계획 수립: 접근 방식 및 우선순위 정의\n실행: 주요 작업 수행\n검토: 결과 품질 점검 및 개선\n완료 보고: 산출물 정리 및 요약`;
+  }
+
+  // 완료 기준 / 산출물
+  let deliverable;
+  if (hasCoding) {
+    deliverable = '동작하는 코드 + 테스트 결과 + README 문서';
+  } else if (hasContent || hasMarketing) {
+    deliverable = '검토 완료된 최종 콘텐츠 + 핵심 메시지 요약';
+  } else if (hasDesign) {
+    deliverable = '완성된 디자인 시안 + 컴포넌트 가이드';
+  } else if (hasResearch) {
+    deliverable = '조사 보고서 + 핵심 인사이트 3가지 이상';
+  } else {
+    deliverable = '검토 완료된 최종 결과물 + 작업 요약 보고서';
+  }
+
+  // 보유 도구 / 리소스
+  let skills;
+  if (hasCoding) {
+    skills = '코드 작성 및 실행, 웹 검색, 파일 읽기/쓰기, 디버깅, 문서 생성';
+  } else if (hasDesign) {
+    skills = '레이아웃 설계, 웹 검색, 레퍼런스 분석, 문서 생성';
+  } else {
+    skills = '웹 검색, 텍스트 작성 및 편집, 논리적 추론, 요약 및 정리, 문서 생성';
+  }
+
+  // 금지 사항 / 제약 조건
+  const constraints = '사실 미확인 내용 추측 금지, 주관적 의견 배제, 요청 범위 외 작업 금지';
+
+  return { steps, deliverable, skills, constraints };
+}
+
+function applyRecommendedDefaults(missionText) {
+  const d = buildRecommendedDefaults(missionText);
+  if (!_fieldEdited.taskSteps)   document.getElementById('taskSteps').value   = d.steps;
+  if (!_fieldEdited.deliverable) document.getElementById('deliverable').value  = d.deliverable;
+  if (!_fieldEdited.skills)      document.getElementById('skills').value       = d.skills;
+  if (!_fieldEdited.constraints) document.getElementById('constraints').value  = d.constraints;
+}
+
+// 페이지 로드 시 기본값 세팅
+applyRecommendedDefaults('');
+
+// 미션 입력과 연동 (debounce)
+(function initMissionSync() {
+  const missionEl = document.getElementById('mission');
+  let _t = null;
+  missionEl.addEventListener('input', () => {
+    clearTimeout(_t);
+    _t = setTimeout(() => applyRecommendedDefaults(missionEl.value.trim()), 700);
+  });
+})();
+
 function openAgentHelp() {
   const list = document.getElementById('agentHelpList');
   list.innerHTML = Object.entries(agentDescriptions).map(([key, desc]) =>
