@@ -211,6 +211,86 @@
     display: block;
   }
 
+  /* ── Help button ── */
+  .help-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid #52525b;
+    background: transparent;
+    color: #71717a;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 8px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .help-btn:hover { border-color: var(--foreground); color: var(--foreground); }
+
+  /* ── Agent help modal ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: #18181b;
+    border: 1px solid #3f3f46;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--foreground);
+    margin-bottom: 16px;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    color: #71717a;
+    cursor: pointer;
+    padding: 2px;
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--foreground); }
+  .agent-help-list { display: flex; flex-direction: column; gap: 10px; }
+  .agent-help-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .agent-help-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--foreground);
+    min-width: 88px;
+    padding-top: 1px;
+  }
+  .agent-help-desc {
+    font-size: 12px;
+    color: #a1a1aa;
+    line-height: 1.5;
+  }
+
   /* ── Platform cards ── */
   .platform-grid {
     display: grid;
@@ -562,6 +642,7 @@
         <div class="section-header">
           <div class="step-badge">2</div>
           <div class="section-title">에이전트 구성</div>
+          <button class="help-btn" onclick="openAgentHelp()" title="에이전트 역할 안내">?</button>
         </div>
         <div class="card">
           <div class="agent-grid" id="agentGrid">
@@ -694,6 +775,18 @@
   </div>
 
 </div>
+
+<!-- Agent help modal -->
+<div class="modal-overlay" id="agentHelpModal" onclick="closeAgentHelp(event)">
+  <div class="modal-box">
+    <div class="modal-title">에이전트 역할 안내</div>
+    <button class="modal-close" onclick="closeAgentHelp()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="agent-help-list" id="agentHelpList"></div>
+  </div>
+</div>
+
 <script>
 const agentDescriptions = {
   coordinator: "전체 흐름을 지휘하고 에이전트에게 작업을 위임하는 총괄 오케스트레이터",
@@ -709,6 +802,23 @@ const agentDescriptions = {
   critic: "비판적 시각으로 약점과 개선점 지적",
   planner: "작업 순서와 리소스 배분 계획 수립"
 };
+
+function openAgentHelp() {
+  const list = document.getElementById('agentHelpList');
+  list.innerHTML = Object.entries(agentDescriptions).map(([key, desc]) =>
+    `<div class="agent-help-item">
+      <span class="agent-help-name">${key.charAt(0).toUpperCase() + key.slice(1)}</span>
+      <span class="agent-help-desc">${desc}</span>
+    </div>`
+  ).join('');
+  document.getElementById('agentHelpModal').classList.add('open');
+}
+
+function closeAgentHelp(e) {
+  if (!e || e.target === document.getElementById('agentHelpModal')) {
+    document.getElementById('agentHelpModal').classList.remove('open');
+  }
+}
 
 function toggleAdvanced() {
   const toggle = document.getElementById('advancedToggle');
