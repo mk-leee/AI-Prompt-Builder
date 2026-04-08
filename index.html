@@ -100,6 +100,20 @@
     color: var(--muted-fg);
     margin-left: 4px;
   }
+  .section-subtitle {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted-fg);
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+  .section-bracket {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted-fg);
+    margin-left: 6px;
+    letter-spacing: 0;
+  }
 
   /* ── Card ── */
   .card {
@@ -568,9 +582,12 @@
 
   <!-- Step 1 -->
   <div class="section">
-    <div class="section-header">
-      <div class="step-badge">1</div>
-      <div class="section-title">목적 설정</div>
+    <div class="section-header" style="align-items: flex-start;">
+      <div class="step-badge" style="margin-top: 2px;">1</div>
+      <div>
+        <div class="section-title">AI에 지시 할 사항 입력<span class="section-bracket" id="sectionBracket"></span></div>
+        <div class="section-subtitle">— 구체적으로 작성할수록 좋습니다</div>
+      </div>
     </div>
     <div class="card">
       <div class="form-row">
@@ -578,7 +595,7 @@
         <input type="text" id="projectName" placeholder="달성 목표를 입력하면 자동으로 생성됩니다">
       </div>
       <div class="form-row">
-        <label>달성 목표 <span class="label-muted">— 구체적으로 작성할수록 좋습니다</span></label>
+        <label>달성 목표</label>
         <textarea id="mission" rows="3" placeholder="예: 블로그 주제를 입력하면 리서치 → 구조 설계 → 초안 작성 → 검토까지 자동으로 처리"></textarea>
       </div>
       <div class="form-row">
@@ -1086,11 +1103,18 @@ ${skills ? `\n## [AVAILABLE_SKILLS]\n사용 가능한 도구/리소스:\n${skill
 ${platformNote}`;
 }
 
+/* ── Section bracket update ── */
+function updateSectionBracket(name) {
+  const el = document.getElementById('sectionBracket');
+  if (el) el.textContent = name ? ` [${name}]` : '';
+}
+
 /* ── Auto project name generation ── */
 let _autoNameActive = true;  // false once user manually edits projectName
 
 document.getElementById('projectName').addEventListener('input', () => {
   _autoNameActive = false;
+  updateSectionBracket(document.getElementById('projectName').value.trim());
 });
 
 (function initAutoName() {
@@ -1104,9 +1128,12 @@ document.getElementById('projectName').addEventListener('input', () => {
       const text = missionEl.value.trim();
       if (!text) {
         document.getElementById('projectName').value = '';
+        updateSectionBracket('');
         return;
       }
-      document.getElementById('projectName').value = deriveProjectName(text);
+      const name = deriveProjectName(text);
+      document.getElementById('projectName').value = name;
+      updateSectionBracket(name);
     }, 600);
   });
 })();
