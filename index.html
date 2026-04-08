@@ -756,7 +756,7 @@
 
   <div class="divider"></div>
 
-  <button class="generate-btn" onclick="generatePrompt()">시스템 프롬프트 생성</button>
+  <button class="generate-btn" onclick="generatePrompt()">프롬프트 생성</button>
   <div class="loading-bar" id="loadingBar"></div>
 
   <!-- Output -->
@@ -1119,7 +1119,7 @@ function deriveProjectName(text) {
   const keywords = words.slice(0, 4);
   if (keywords.length === 0) return '';
 
-  return keywords.join(' ') + ' 시스템';
+  return keywords.join(' ');
 }
 
 function copyPrompt() {
