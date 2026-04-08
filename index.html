@@ -695,6 +695,7 @@
         <div class="section-header">
           <div class="step-badge">3</div>
           <div class="section-title">실행 모드</div>
+          <button class="help-btn" onclick="openModeHelp()" title="실행 모드 안내">?</button>
         </div>
         <div class="mode-grid" id="modeGrid">
           <div class="mode-card selected" data-mode="swarm" onclick="selectMode(this)">
@@ -784,6 +785,30 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
     <div class="agent-help-list" id="agentHelpList"></div>
+  </div>
+</div>
+
+<!-- Mode help modal -->
+<div class="modal-overlay" id="modeHelpModal" onclick="closeModeHelp(event)">
+  <div class="modal-box">
+    <div class="modal-title">실행 모드 안내</div>
+    <button class="modal-close" onclick="closeModeHelp()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="agent-help-list">
+      <div class="agent-help-item">
+        <span class="agent-help-name">🐝 SWARM</span>
+        <span class="agent-help-desc">에이전트들이 동시에 역할을 분담하여 실시간으로 협업합니다. 각자 전문 영역을 맡아 병렬로 진행하며, 서로의 결과를 공유하면서 하나의 산출물로 합칩니다. 복잡한 팀 기반 작업에 가장 적합합니다.</span>
+      </div>
+      <div class="agent-help-item">
+        <span class="agent-help-name">⛓ SEQUENTIAL</span>
+        <span class="agent-help-desc">에이전트가 정해진 순서대로 한 명씩 바통을 넘깁니다. 이전 에이전트의 결과물이 다음 에이전트의 입력이 되는 파이프라인 구조입니다. 순서가 중요하거나 단계별 검증이 필요한 작업에 적합합니다.</span>
+      </div>
+      <div class="agent-help-item">
+        <span class="agent-help-name">🍴 FORK</span>
+        <span class="agent-help-desc">동일한 목표를 여러 에이전트가 독립적으로 각자의 방식으로 시도합니다. 마지막에 Coordinator가 각 결과를 비교·병합하여 최선의 답을 도출합니다. 다양한 접근법을 비교하거나 창의적 아이디어가 필요할 때 적합합니다.</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -897,6 +922,16 @@ function openAgentHelp() {
 function closeAgentHelp(e) {
   if (!e || e.target === document.getElementById('agentHelpModal')) {
     document.getElementById('agentHelpModal').classList.remove('open');
+  }
+}
+
+function openModeHelp() {
+  document.getElementById('modeHelpModal').classList.add('open');
+}
+
+function closeModeHelp(e) {
+  if (!e || e.target === document.getElementById('modeHelpModal')) {
+    document.getElementById('modeHelpModal').classList.remove('open');
   }
 }
 
