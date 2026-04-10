@@ -558,6 +558,50 @@
     overflow-y: auto;
   }
 
+  /* ── Purpose toggle ── */
+  .purpose-toggle {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+  }
+  .purpose-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 12px;
+    border: none;
+    border-radius: calc(var(--radius) - 2px);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: transparent;
+    color: var(--muted-fg);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .purpose-btn:hover {
+    color: var(--foreground);
+    background: rgba(255,255,255,0.04);
+  }
+  .purpose-btn.selected {
+    background: var(--foreground);
+    color: var(--background);
+  }
+  .purpose-desc {
+    font-size: 11.5px;
+    color: var(--muted-fg);
+    margin-bottom: 20px;
+    padding: 0 2px;
+    line-height: 1.5;
+  }
+
   /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -579,6 +623,17 @@
       <div>4. copy 아이콘 클릭 후 AI에 가서 질문하기</div>
     </div>
   </div>
+
+  <!-- Purpose Toggle -->
+  <div class="purpose-toggle">
+    <button class="purpose-btn selected" data-purpose="report" onclick="selectPurpose(this)">
+      📄 보고서용
+    </button>
+    <button class="purpose-btn" data-purpose="appdev" onclick="selectPurpose(this)">
+      💻 앱개발용
+    </button>
+  </div>
+  <p class="purpose-desc" id="purposeDesc">리서치·분석·보고서 작성에 최적화된 멀티에이전트 프롬프트를 생성합니다.</p>
 
   <!-- Step 1 -->
   <div class="section">
@@ -740,11 +795,11 @@
       <div class="section">
         <div class="section-header">
           <div class="step-badge">4</div>
-          <div class="section-title">Task 정의</div>
+          <div class="section-title" id="section4Title">Task 정의</div>
         </div>
         <div class="card">
           <div class="form-row">
-            <label>작업 단계 <span class="label-muted">— 줄바꿈으로 구분</span></label>
+            <label id="taskStepsLabel">작업 단계 <span class="label-muted">— 줄바꿈으로 구분</span></label>
             <textarea id="taskSteps" rows="5" placeholder="리서치: 주제 관련 최신 자료 수집&#10;분석: 핵심 인사이트 3가지 추출&#10;기획: 콘텐츠 구조 설계&#10;작성: 초안 작성 (2000자)&#10;검토: 논리 흐름 및 오류 점검"></textarea>
             <p class="form-hint">각 단계는 Todo Task로 변환되어 pending → in_progress → completed 상태로 추적됩니다.</p>
           </div>
@@ -759,15 +814,15 @@
       <div class="section">
         <div class="section-header">
           <div class="step-badge">5</div>
-          <div class="section-title">Skill 설정 <span class="section-optional">(선택)</span></div>
+          <div class="section-title" id="section5Title">Skill 설정 <span class="section-optional">(선택)</span></div>
         </div>
         <div class="card">
           <div class="form-row">
-            <label>보유 도구 / 리소스</label>
+            <label id="skillsLabel">보유 도구 / 리소스</label>
             <textarea id="skills" rows="3" placeholder="웹 검색, 코드 실행, 파일 읽기/쓰기, 이미지 생성 등 사용 가능한 도구를 입력"></textarea>
           </div>
           <div class="form-row">
-            <label>금지 사항 / 제약 조건</label>
+            <label id="constraintsLabel">금지 사항 / 제약 조건</label>
             <input type="text" id="constraints" placeholder="예: 외부 링크 삽입 금지, 500자 이상 응답 금지, 주관적 의견 배제">
           </div>
         </div>
@@ -833,6 +888,66 @@
 </div>
 
 <script>
+/* ── Purpose ── */
+let currentPurpose = 'report';
+
+function selectPurpose(el) {
+  document.querySelectorAll('.purpose-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  currentPurpose = el.dataset.purpose;
+  const isAppDev = currentPurpose === 'appdev';
+
+  document.getElementById('purposeDesc').textContent = isAppDev
+    ? '앱·웹 개발에 최적화된 개발팀 프롬프트를 생성합니다. SDLC 기반 단계별 구현 진행.'
+    : '리서치·분석·보고서 작성에 최적화된 멀티에이전트 프롬프트를 생성합니다.';
+
+  // 에이전트 기본 선택
+  const reportAgents  = ['coordinator','researcher','analyst','writer','reviewer','strategist','critic','planner'];
+  const appdevAgents  = ['coordinator','developer','designer','tester','reviewer','planner'];
+  const targetAgents  = isAppDev ? appdevAgents : reportAgents;
+  document.querySelectorAll('.agent-chip').forEach(chip => {
+    chip.classList.toggle('selected', targetAgents.includes(chip.dataset.agent));
+  });
+
+  // 실행 모드 기본값
+  const targetMode = isAppDev ? 'sequential' : 'swarm';
+  document.querySelectorAll('.mode-card').forEach(card => {
+    card.classList.toggle('selected', card.dataset.mode === targetMode);
+  });
+
+  // 레이블 업데이트
+  document.getElementById('section4Title').textContent    = isAppDev ? '개발 단계 정의' : 'Task 정의';
+  document.getElementById('taskStepsLabel').innerHTML     = isAppDev
+    ? '개발 단계 <span class="label-muted">— 줄바꿈으로 구분</span>'
+    : '작업 단계 <span class="label-muted">— 줄바꿈으로 구분</span>';
+  document.getElementById('section5Title').innerHTML      = isAppDev
+    ? '기술 스택 & 제약 설정 <span class="section-optional">(선택)</span>'
+    : 'Skill 설정 <span class="section-optional">(선택)</span>';
+  document.getElementById('skillsLabel').textContent      = isAppDev ? '기술 스택 / 도구' : '보유 도구 / 리소스';
+  document.getElementById('constraintsLabel').textContent = isAppDev ? '컨벤션 / 제약 조건' : '금지 사항 / 제약 조건';
+
+  // 플레이스홀더 업데이트
+  document.getElementById('mission').placeholder = isAppDev
+    ? '예: React + Node.js로 할일 관리 앱 개발 — 사용자 인증, CRUD, 실시간 알림 기능 포함'
+    : '예: 블로그 주제를 입력하면 리서치 → 구조 설계 → 초안 작성 → 검토까지 자동으로 처리';
+  document.getElementById('taskSteps').placeholder = isAppDev
+    ? '요구사항 분석: 기능 목록 및 기술 스택 정의\n아키텍처 설계: 시스템 구조 및 데이터 모델\n핵심 기능 구현: 주요 기능 코드 작성\n테스트: 단위/통합 테스트 작성 및 실행\n코드 리뷰: 품질 점검 및 리팩토링\n문서화: README 및 API 문서 정리'
+    : '리서치: 주제 관련 최신 자료 수집\n분석: 핵심 인사이트 3가지 추출\n기획: 콘텐츠 구조 설계\n작성: 초안 작성 (2000자)\n검토: 논리 흐름 및 오류 점검';
+  document.getElementById('deliverable').placeholder = isAppDev
+    ? '예: 동작하는 앱 코드 + 테스트 커버리지 80% 이상 + README'
+    : '예: 검토 완료된 2000자 블로그 포스트 + SEO 메타데이터';
+  document.getElementById('skills').placeholder = isAppDev
+    ? '예: 코드 작성 및 실행, 파일 읽기/쓰기, 웹 검색, 디버깅, 테스트 실행'
+    : '웹 검색, 코드 실행, 파일 읽기/쓰기, 이미지 생성 등 사용 가능한 도구를 입력';
+  document.getElementById('constraints').placeholder = isAppDev
+    ? '예: TypeScript 사용 필수, ESLint 규칙 준수, 외부 라이브러리 최소화'
+    : '예: 외부 링크 삽입 금지, 500자 이상 응답 금지, 주관적 의견 배제';
+
+  // 필드 수정 플래그 초기화 후 기본값 재적용
+  Object.keys(_fieldEdited).forEach(k => _fieldEdited[k] = false);
+  applyRecommendedDefaults(document.getElementById('mission').value.trim());
+}
+
 const agentDescriptions = {
   coordinator: "전체 흐름을 지휘하고 에이전트에게 작업을 위임하는 총괄 오케스트레이터",
   researcher: "웹/자료 조사를 담당하며 신뢰할 수 있는 정보를 수집",
@@ -907,7 +1022,56 @@ function buildRecommendedDefaults(missionText) {
   return { steps, deliverable, skills, constraints };
 }
 
+function buildAppDevDefaults(missionText) {
+  const hasReact     = /react|next\.?js|vue|angular|svelte|nuxt/i.test(missionText);
+  const hasNode      = /node|express|fastify|nest\.?js|koa/i.test(missionText);
+  const hasMobile    = /flutter|react native|swift|kotlin|ios|android|모바일/i.test(missionText);
+  const hasPython    = /python|django|flask|fastapi|파이썬/i.test(missionText);
+  const hasFullStack = (hasReact || hasNode) && missionText.length > 20;
+
+  let steps;
+  if (hasMobile) {
+    steps = `요구사항 분석: 화면 목록 및 기능 명세 정의\nUI/UX 설계: 화면 구조 및 컴포넌트 설계\n핵심 화면 구현: 메인 UI 컴포넌트 개발\n비즈니스 로직: 상태 관리 및 API 연동\n테스트: 기기별 동작 확인 및 버그 수정\n배포 준비: 빌드 최적화 및 스토어 등록 준비`;
+  } else if (hasFullStack) {
+    steps = `요구사항 분석: 기능 명세 및 기술 스택 확정\n아키텍처 설계: 컴포넌트 구조 및 API 엔드포인트 설계\n프론트엔드 구현: UI 컴포넌트 및 상태 관리\n백엔드 구현: API 서버 및 데이터베이스 연동\n테스트: 단위/통합 테스트 작성 및 실행\n문서화: README 및 API 명세 정리`;
+  } else if (hasPython) {
+    steps = `요구사항 분석: 기능 목록 및 기술 스택 정의\n설계: 모듈 구조 및 데이터 모델 설계\n핵심 기능 구현: 주요 모듈 코드 작성\n테스트: pytest 기반 테스트 작성 및 실행\n최적화: 성능 및 코드 품질 개선\n문서화: docstring 및 README 정리`;
+  } else {
+    steps = `요구사항 분석: 기능 목록 및 기술 스택 정의\n아키텍처 설계: 시스템 구조 및 데이터 모델 설계\n핵심 기능 구현: 주요 기능 코드 작성\n테스트: 기능 검증 및 엣지케이스 점검\n코드 리뷰: 품질 점검 및 리팩토링\n문서화: README 및 주석 정리`;
+  }
+
+  let deliverable;
+  if (hasMobile) {
+    deliverable = '실행 가능한 모바일 앱 + 테스트 결과 + 배포 가이드';
+  } else if (hasFullStack) {
+    deliverable = '동작하는 풀스택 앱 코드 + 테스트 커버리지 80% + README + API 문서';
+  } else {
+    deliverable = '동작하는 앱 코드 + 테스트 커버리지 80% 이상 + README';
+  }
+
+  let skills;
+  if (hasReact) {
+    skills = '코드 작성 및 실행, 파일 읽기/쓰기, npm 패키지 관리, 웹 검색 (공식 문서), 디버깅';
+  } else if (hasPython) {
+    skills = '코드 작성 및 실행, 파일 읽기/쓰기, pip 패키지 관리, 웹 검색 (공식 문서), 디버깅';
+  } else {
+    skills = '코드 작성 및 실행, 파일 읽기/쓰기, 웹 검색, 디버깅, 테스트 실행';
+  }
+
+  const constraints = 'OWASP 보안 취약점 금지, 하드코딩된 비밀키 금지, 미완성 코드(TODO) 제출 금지';
+
+  return { steps, deliverable, skills, constraints };
+}
+
 function applyRecommendedDefaults(missionText) {
+  if (currentPurpose === 'appdev') {
+    const d = buildAppDevDefaults(missionText);
+    if (!_fieldEdited.taskSteps)   document.getElementById('taskSteps').value   = d.steps;
+    if (!_fieldEdited.deliverable) document.getElementById('deliverable').value  = d.deliverable;
+    if (!_fieldEdited.skills)      document.getElementById('skills').value       = d.skills;
+    if (!_fieldEdited.constraints) document.getElementById('constraints').value  = d.constraints;
+    return;
+  }
   const d = buildRecommendedDefaults(missionText);
   if (!_fieldEdited.taskSteps)   document.getElementById('taskSteps').value   = d.steps;
   if (!_fieldEdited.deliverable) document.getElementById('deliverable').value  = d.deliverable;
@@ -1033,7 +1197,9 @@ function generatePrompt() {
   }, 600);
 }
 
-function buildPrompt({ projectName, mission, platform, agents, mode, taskSteps, deliverable, skills, constraints }) {
+function buildPrompt(params) {
+  if (currentPurpose === 'appdev') return buildAppDevPrompt(params);
+  const { projectName, mission, platform, agents, mode, taskSteps, deliverable, skills, constraints } = params;
   const modeDescriptions = {
     swarm: "SWARM (협업) 모드 — 에이전트들이 동시에 역할을 분담하여 병렬 협업합니다. 각 에이전트는 다른 에이전트의 진행 상황을 인지하고 결과를 공유합니다.",
     sequential: "SEQUENTIAL (순차) 모드 — 에이전트들이 파이프라인으로 연결됩니다. 이전 에이전트의 OUTPUT이 다음 에이전트의 INPUT이 됩니다.",
@@ -1354,6 +1520,282 @@ function deriveProjectName(text) {
   if (keywords.length === 0) return '';
 
   return keywords.join(' ');
+}
+
+/* ── App Development Prompt Builder ── */
+function buildAppDevPrompt({ projectName, mission, platform, agents, mode, taskSteps, deliverable, skills, constraints }) {
+  const modeDescriptions = {
+    swarm:      'SWARM (협업) 모드 — 개발자·디자이너·테스터가 병렬 협업합니다. 각자의 전문 영역을 동시에 진행하며 결과를 공유합니다.',
+    sequential: 'SEQUENTIAL (순차) 모드 — 요구사항 → 설계 → 구현 → 테스트 → 리뷰 순으로 단계적으로 진행합니다. 이전 단계 산출물이 다음 단계의 입력이 됩니다.',
+    fork:       'FORK (분기) 모드 — 여러 구현 방식을 독립적으로 탐색한 후 COORDINATOR가 최선의 접근법을 선택·병합합니다.'
+  };
+
+  const phases = taskSteps
+    ? taskSteps.split('\n').filter(Boolean).map((s, i) => `  [PHASE_${String(i+1).padStart(2,'0')}] ${s} — status: pending`).join('\n')
+    : `  [PHASE_01] 요구사항 분석 — status: pending
+  [PHASE_02] 아키텍처 설계 — status: pending
+  [PHASE_03] 핵심 기능 구현 — status: pending
+  [PHASE_04] 테스트 작성 및 실행 — status: pending
+  [PHASE_05] 코드 리뷰 및 문서화 — status: pending`;
+
+  const agentDefs = agents.map(a => {
+    const desc = agentDescriptions[a] || `${a} 역할을 수행`;
+    return `  • [${a.toUpperCase()}] — ${desc}`;
+  }).join('\n');
+
+  const platformNote = {
+    claude:     '※ Claude 사용 시: 코드 블록에 언어를 명시하고, Extended Thinking 활성화를 권장합니다. 설계 결정의 근거를 <thinking> 태그로 명시하면 더욱 효과적입니다.',
+    gpt:        '※ ChatGPT 사용 시: Code Interpreter(Python)를 활성화하면 코드 즉시 실행이 가능합니다. 각 에이전트 응답을 "[AGENT명]:" 형식으로 시작하세요.',
+    perplexity: '※ Perplexity 사용 시: 라이브러리 공식 문서, 최신 버전, 베스트 프랙티스 조사에 Researcher 에이전트를 우선 활용하세요.',
+    generic:    '※ 범용 모드: 모든 AI 플랫폼에서 동작하는 표준 개발 프롬프트입니다.'
+  }[platform] || '';
+
+  // Gemini용 단순화 버전
+  if (platform === 'gemini') {
+    const geminiPhases = taskSteps
+      ? taskSteps.split('\n').filter(Boolean).map((s, i) => `- PHASE_${String(i+1).padStart(2,'0')}: ${s} (대기 중)`).join('\n')
+      : `- PHASE_01: 요구사항 분석 (대기 중)
+- PHASE_02: 아키텍처 설계 (대기 중)
+- PHASE_03: 핵심 기능 구현 (대기 중)
+- PHASE_04: 테스트 작성 및 실행 (대기 중)
+- PHASE_05: 코드 리뷰 및 문서화 (대기 중)`;
+    const geminiAgentDefs = agents.map(a => {
+      const desc = agentDescriptions[a] || `${a} 역할을 수행`;
+      return `- **${a.toUpperCase()}**: ${desc}`;
+    }).join('\n');
+
+    return `# 앱 개발팀 협업 시나리오
+프로젝트: ${projectName}
+
+---
+
+## 미션
+${mission}
+${deliverable ? `\n목표 산출물: ${deliverable}` : ''}
+
+## 실행 방식
+${modeDescriptions[mode]}
+
+## 개발팀 구성
+${geminiAgentDefs}
+
+## 개발 단계
+${geminiPhases}
+
+## 코딩 원칙
+- 실행 가능한 완성 코드를 제공합니다. (스니펫 금지)
+- 코드 블록(\`\`\`언어명)을 반드시 사용합니다.
+- 각 함수/모듈에 역할 주석을 추가합니다.
+- 테스트 코드는 구현 코드와 함께 제공합니다.
+- 보안 취약점(OWASP Top 10)을 사전 점검합니다.
+- API 키 등 민감 정보는 환경변수로 관리합니다.
+
+## 출력 형식
+
+**각 단계 진행 중**
+- 설계 결정 근거를 먼저 설명합니다.
+- 완성된 코드를 블록으로 제공합니다.
+- 실행 방법 및 예상 결과를 명시합니다.
+
+**최종 개발 완료 보고서** (모든 단계 완료 후 COORDINATOR 작성)
+
+---
+## ${projectName} — 개발 완료 보고서
+**완료일**: YYYY-MM-DD  |  **개발팀**: [참여 에이전트 목록]
+
+### 구현된 기능
+[기능 목록과 구현 방식]
+
+### 파일/디렉토리 구조
+\`\`\`
+project-root/
+├── src/
+│   └── ...
+\`\`\`
+
+### 설치 및 실행
+\`\`\`bash
+# 의존성 설치 및 실행 명령어
+\`\`\`
+
+### 기술 스택 및 결정 사항
+[사용된 기술 스택 및 선택 이유]
+
+### 알려진 제한사항 및 향후 개선 방향
+---
+
+## 진행 규칙
+매 응답마다 개발 현황을 표시해 주세요:
+
+**DEV BOARD**
+- PHASE_01: [상태] 단계명
+- 현재 담당: [역할명]
+
+상태: ⬜ 대기 중 / 🔄 진행 중 / ✅ 완료
+
+1. 단계 전환 시 이전 단계 산출물을 요약하여 다음 담당자에게 전달합니다.
+2. 단계 완료 시: "✅ PHASE_번호 완료 — 산출물: (구현 기능 요약)"
+3. 모든 단계 완료 후 위 형식의 최종 보고서를 작성합니다.
+${constraints ? `\n## 제약 사항\n${constraints.split(',').map(c => `- ${c.trim()}`).join('\n')}` : ''}
+${skills ? `\n## 기술 스택 / 도구\n${skills.split(',').map(s => `- ${s.trim()}`).join('\n')}` : ''}
+
+## 시작
+1. "🚀 개발팀 준비 완료 | 참여 역할 ${agents.length}개 | 모드: ${mode.toUpperCase()}" 출력
+2. 전체 개발 단계를 현황판 형식으로 표시 (모두 ⬜ 대기 중)
+3. COORDINATOR가 PHASE_01을 🔄 진행 중으로 변경하고 요구사항 분석을 시작해 주세요.`;
+  }
+
+  // Claude / ChatGPT / Perplexity / Generic 표준 프롬프트
+  return `# ╔══════════════════════════════════════╗
+# ║   APP DEV SYSTEM PROMPT              ║
+# ║   Project: ${projectName.padEnd(26)}║
+# ╚══════════════════════════════════════╝
+# Generated by MK Prompt Builder
+# Based on Software Development Lifecycle (SDLC)
+# ──────────────────────────────────────────────────────
+
+## [SYSTEM_IDENTITY]
+당신은 전문 소프트웨어 개발팀 AI 시스템입니다.
+요구사항 분석 → 설계 → 구현 → 테스트 → 문서화까지 전체 개발 라이프사이클을 담당합니다.
+단순 코드 생성이 아닌, 아키텍처 결정과 코드 품질에 책임지는 개발 팀으로 동작합니다.
+
+## [MISSION]
+${mission}
+${deliverable ? `\n최종 산출물: ${deliverable}` : ''}
+
+## [EXECUTION_MODE]
+${modeDescriptions[mode]}
+
+## [DEV_TEAM_ROSTER]
+활성화된 개발팀:
+${agentDefs}
+
+각 에이전트는 전문 분야의 독립적 관점으로 판단합니다.
+기술적 충돌 시 COORDINATOR가 최종 결정합니다.
+
+## [DEVELOPMENT_PHASES]
+개발은 아래 단계로 진행되며 각 Phase 상태를 추적합니다:
+${phases}
+
+상태 규칙:
+- pending     → 대기 중
+- in_progress → 현재 진행 중 (한 번에 하나만)
+- completed   → 완료 (산출물 명시 필수)
+
+## [CODING_STANDARDS]
+모든 코드 작성 시 반드시 준수:
+
+1. 완성 코드: 스니펫이 아닌 실행 가능한 전체 코드를 제공합니다.
+2. 코드 블록: 언어를 명시한 코드 블록을 사용합니다. (\`\`\`javascript, \`\`\`python 등)
+3. 주석: 각 함수·클래스·모듈의 목적과 파라미터를 명시합니다.
+4. 테스트: 구현 코드와 함께 테스트 코드를 제공합니다.
+5. 보안: OWASP Top 10 취약점(SQL 인젝션·XSS·CSRF 등)을 사전 점검합니다.
+6. 에러 처리: 예외 상황과 엣지케이스를 명시적으로 처리합니다.
+7. 하드코딩 금지: API 키·비밀번호 등 민감 정보는 환경변수로 관리합니다.
+
+## [OUTPUT_FORMAT]
+
+### ▶ 단계별 개발 응답 (각 Phase 진행 중)
+- **설계 결정**: 구현 방식 선택 이유와 대안 비교
+- **구현 코드**: 파일 경로를 명시한 실행 가능한 전체 코드
+- **실행 방법**: 설치 명령어 및 실행 방법
+- **테스트**: 주요 기능 테스트 코드 및 예상 결과
+
+### ▶ 최종 개발 완료 보고서 (모든 Phase 완료 후 COORDINATOR 작성)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ${projectName} — 개발 완료 보고서
+**완료일**: YYYY-MM-DD  |  **개발팀**: [참여 에이전트 목록]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## 1. 프로젝트 개요
+구현된 기능과 달성한 목표를 간결하게 서술합니다.
+
+## 2. 기술 스택 및 아키텍처
+| 영역 | 기술 | 선택 이유 |
+|------|------|----------|
+| 프론트엔드 | ... | ... |
+| 백엔드 | ... | ... |
+| 데이터베이스 | ... | ... |
+| 인프라/배포 | ... | ... |
+
+## 3. 구현된 기능
+| 기능명 | 설명 | 구현 방식 | 상태 |
+|--------|------|----------|------|
+| ... | ... | ... | ✅ |
+
+## 4. 파일/디렉토리 구조
+\`\`\`
+project-root/
+├── src/
+│   └── ...
+\`\`\`
+
+## 5. 설치 및 실행 방법
+\`\`\`bash
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
+npm run dev
+
+# 테스트 실행
+npm test
+\`\`\`
+
+## 6. 주요 기술 결정 사항
+각 기술 선택의 이유와 대안 비교를 서술합니다.
+
+## 7. 알려진 제한사항 및 향후 개선 방향
+현재 구현의 한계와 개선 방향을 명시합니다.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+## [OPERATING_RULES]
+매 응답마다 반드시 아래 개발 현황판을 응답 맨 앞에 출력하세요:
+
+┌─────────────────────────────────────┐
+│ 💻 DEV BOARD                        │
+│  PHASE_01  [아이콘] 단계명           │
+│  PHASE_02  [아이콘] 단계명           │
+│  ...                                │
+│  현재 담당: [AGENT명]               │
+└─────────────────────────────────────┘
+
+상태 아이콘:
+  ⬜ pending    → 시작 전
+  🔄 in_progress → 진행 중
+  ✅ completed  → 완료
+
+1. Phase 전환 시 이전 Phase 산출물을 요약하여 다음 담당자에게 전달합니다.
+   형식: [HANDOFF → 다음AGENT]: "산출물 요약 (코드 파일명/기능 목록)"
+
+2. Phase 완료 시:
+   형식: ✅ PHASE_번호 완료 — 산출물: (파일명 또는 기능 요약)
+
+3. 코드 작성 시 반드시 파일 전체를 제공합니다. (...생략, TODO 금지)
+
+4. 모든 Phase가 ✅ completed 되면 COORDINATOR가 위 형식의 최종 보고서를 작성합니다.
+
+5. 사용자가 특정 에이전트를 지목하면 해당 에이전트만 응답합니다.
+   예: "@Developer 인증 로직 수정 필요" → Developer만 응답
+
+6. 기술적으로 불가능하거나 불명확한 요구사항은 [CLARIFICATION_NEEDED] 태그로 명시합니다.
+${constraints ? `\n## [CONSTRAINTS]\n코딩 규칙 / 제약 사항:\n${constraints.split(',').map(c => `  ✗ ${c.trim()}`).join('\n')}` : ''}
+${skills ? `\n## [TECH_STACK & SKILLS]\n기술 스택 및 사용 가능한 도구:\n${skills.split(',').map(s => `  ✓ ${s.trim()}`).join('\n')}` : ''}
+
+## [START_PROTOCOL]
+시스템 시작 순서:
+
+1. 초기화 메시지 출력:
+   "🚀 DEV TEAM 초기화 완료 | 에이전트 ${agents.length}명 활성화 | 모드: ${mode.toUpperCase()}"
+
+2. 전체 개발 단계를 현황판 형식으로 표시 (모두 ⬜ pending)
+
+3. COORDINATOR가 미션과 기술 스택을 확인하고 PHASE_01을 🔄 in_progress로 변경하여 요구사항 분석 시작
+
+지금 바로 시작하세요.
+
+${platformNote}`;
 }
 
 function copyPrompt() {
